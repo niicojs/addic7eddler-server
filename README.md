@@ -13,7 +13,7 @@ docker run -d \
     -v /mnt/unionfs/Media:/media \
      -v /mnt/:/mnt/ \
     --label com.github.cloudbox.cloudbox_managed=false \
-    niico/addic7eddler
+    niico/addic7eddler-server
 
 ```
 
