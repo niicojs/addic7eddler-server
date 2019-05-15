@@ -2,9 +2,9 @@
   "name": "addic7eddler-server",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +13,8 @@
     "singleQuote": true
   },
   "dependencies": {
-    "fastify": "^2.3.0"
+    "cheerio": "^1.0.0-rc.3",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7"
   }
 }

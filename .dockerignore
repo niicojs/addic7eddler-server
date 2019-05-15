@@ -1,1 +1,9 @@
+.git
+.gitignore
+.vscode
 node_modules
+.env
+config*.json
+dev*.json
+Dockerfile
+README.md
