@@ -14,6 +14,8 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
+    "date-fns": "^1.30.1",
+    "nanomatch": "^1.2.13",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7"
   }

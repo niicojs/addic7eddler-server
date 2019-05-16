@@ -1,6 +1,10 @@
 // @ts-check
 const fs = require('fs');
+const path = require('path');
 const cheerio = require('cheerio');
+const addMonths = require('date-fns/add_months');
+const isAfter = require('date-fns/is_after');
+const nm = require('nanomatch');
 const rp = require('request-promise-native');
 const request = rp.defaults({
   jar: rp.jar(),
@@ -14,6 +18,15 @@ const request = rp.defaults({
   gzip: true
 });
 
+const versionMapping = {
+  '720pHDTVAVS': 'AVS',
+  SVA: 'AVS',
+  '*AVS-SVA*': 'AVS',
+  'SVA-720p.AVS-HBO.WEBRip.*': 'AVS',
+  'WEB-TBS': 'TBS',
+  DIMENSION: 'LOL'
+};
+
 class Addic7ed {
   constructor(lang) {
     this.epcache = {};
@@ -25,11 +38,6 @@ class Addic7ed {
   }
 
   async getShows() {
-    const cached = JSON.parse(
-      await fs.promises.readFile('dev-shows.json', 'utf8')
-    );
-    this.shows = cached;
-    return cached;
     const url = 'http://www.addic7ed.com';
     const html = await request.get(url);
     // await fs.writeFile('shows.html', html, 'utf8');
@@ -43,6 +51,14 @@ class Addic7ed {
         url: 'http://www.addic7ed.com/show/' + $(elt).attr('value')
       }))
       .filter(elt => +elt.id !== 0);
+    
+    for (const show of shows) {
+      if (show.name.startsWith('NCIS:')) {
+        show.name = show.name.replace(/^NCIS\:/, 'NCIS -');
+      }
+    }
+    
+      this.shows = shows;
     return shows;
   }
 
@@ -109,7 +125,15 @@ class Addic7ed {
         .filter(ep => ep.completed);
 
       for (const ep of episodes) {
-
+        ep.versions = ep.version.toUpperCase().split(/(\s*\&\s*)/);
+        for (let i = 0; i < ep.versions.length; i++) {
+          for (const map in versionMapping) {
+            if (nm.isMatch(ep.versions[i], map, {})) {
+              ep.versions[i] = versionMapping[map];
+              break;
+            }
+          }
+        }
       }
 
       this.epcache[`${show.id}-${season}`] = episodes;
@@ -118,18 +142,54 @@ class Addic7ed {
   }
 
   async findMatchingEpisode(video, show) {
-    const info = video.parsed;
-    const episodes = await this.findEpisodes(show, info.season);
-    const thisone = episodes.filter(ep => +ep.episode === +info.episode);
-    const match = thisone.filter(ep => ep.version === info.group);
-    if (match.length > 0) {
-      console.log(`exact match`);
-      console.log(match);
+    const twoMonthsAgo = addMonths(Date.now(), -2);
+    if (isAfter(video.modified, twoMonthsAgo)) {
+      const info = video.parsed;
+      if (info) {
+        const episodes = await this.findEpisodes(show, info.season);
+        const thisone = episodes.filter(ep => +ep.episode === +info.episode);
+        const match = thisone.filter(ep => ep.versions.includes(info.group));
+        if (match.length > 0) {
+          console.log(`  -> found`);
+          await this.download(show, match[0], video);
+        } else if (match.length === 0) {
+          console.log(`  -> not yet`);
+        } else {
+          console.log(`  -> not a exact match, get all? (maybe later)`);
+          // for (const m of thisone) {
+          //   await this.download(show, m, video, false);
+          // }
+        }
+      } else {
+        console.log(`  -> unable to parse episode`);
+      }
     } else {
-      console.log(`not a exact match`);
-      console.log(thisone);
+      console.log(`  -> video is too old, give up`);
     }
-    ''.toString();
+  }
+
+  async download(show, episode, video, rename = true) {
+    const data = await request.get(episode.url, {
+      resolveWithFullResponse: true,
+      headers: {
+        Referer: `${show.url}/${episode.season}`
+      },
+      encoding: null
+    });
+
+    const folder = path.dirname(video.path);
+    if (rename) {
+      const file = path.basename(video.path, path.extname(video.path));
+      await fs.promises.writeFile(path.join(folder, file + '.srt'), data.body);
+    } else {
+      let filename = data.headers['content-disposition'];
+      if (filename) {
+        filename = filename
+          .replace('attachment; filename=', '')
+          .replace(/(:|"|\t)/g, '');
+        await fs.promises.writeFile(path.join(folder, filename), data.body);
+      }
+    }
   }
 }
 

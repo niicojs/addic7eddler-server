@@ -22,6 +22,7 @@ let config = {
   config = JSON.parse(json);
 
   const videos = await Shows.getMissing(config.media);
+  console.log(`${videos.length} videos without subtitles`);
   // await fs.promises.writeFile('dev-videos.json', JSON.stringify(videos), 'utf8');
 
   if (videos.length > 0) {
@@ -35,8 +36,10 @@ let config = {
       if (found) {
         await addic7ed.findMatchingEpisode(video, found);
       } else {
-        console.log(`TV Show not found: ${video.name}`);
+        console.log(` --> TV Show not found`);
       }
     }
   }
+
+  console.log('Done.');
 })();

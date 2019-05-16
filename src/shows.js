@@ -14,9 +14,19 @@ const hasSubtitle = (file, all) => {
 };
 
 const parseEpisode = file => {
-  const regex = /(?<name>.+?)(\.(?<year>\d{4}))?\.S(?<season>\d+)E(?<episode>\d+)(\-E(?<multi>\d+))?\.(?<quality>.+)\.(?<codec>.+)\-(?<group>.+)\.(?<ext>.+)/gi;
-  const m = regex.exec(file);
-  return m ? m.groups : undefined;
+  let regex = /(?<name>.+?)(\.(?<year>\d{4}))?\.S(?<season>\d+)E(?<episode>\d+)(\-E(?<multi>\d+))?\.(?<quality>.+)\.(?<codec>.+)\-(?<group>.+)\.(?<ext>.+)/gi;
+  let m = regex.exec(file);
+  if (!m) {
+    // try to parse without codec
+    let regex = /(?<name>.+?)(\.(?<year>\d{4}))?\.S(?<season>\d+)E(?<episode>\d+)(\-E(?<multi>\d+))?\.(?<quality>.+)\-(?<group>.+)\.(?<ext>.+)/;
+    m = regex.exec(file);
+  }
+  if (!m) return undefined;
+  const info = m.groups;
+  info.group = info.group.replace(/\[.+\]$/, '');
+  info.group = info.group.toUpperCase();
+  if (info.group === 'SVA') info.group = 'AVS';
+  return info;
 };
 
 class Shows {
@@ -49,14 +59,13 @@ class Shows {
       const full = path.join(season.path, file);
       const stats = await fs.promises.lstat(full);
       if (!stats.isDirectory() && isVideo(file)) {
-        // we have a video
         if (!hasSubtitle(file, files)) {
           missing.push({
             name: file,
             path: full,
             show: show.name,
-            // season: season.season,
-            parsed: parseEpisode(file)
+            parsed: parseEpisode(file),
+            modified: stats.mtime
           });
         }
       }
