@@ -51,14 +51,14 @@ class Addic7ed {
         url: 'http://www.addic7ed.com/show/' + $(elt).attr('value')
       }))
       .filter(elt => +elt.id !== 0);
-    
+
     for (const show of shows) {
       if (show.name.startsWith('NCIS:')) {
         show.name = show.name.replace(/^NCIS\:/, 'NCIS -');
       }
     }
-    
-      this.shows = shows;
+
+    this.shows = shows;
     return shows;
   }
 
@@ -125,12 +125,14 @@ class Addic7ed {
         .filter(ep => ep.completed);
 
       for (const ep of episodes) {
-        ep.versions = ep.version.toUpperCase().split(/(\s*\&\s*)/);
+        ep.versions = ep.version.toUpperCase().split(/(\s*\&\s*)|\//);
         for (let i = 0; i < ep.versions.length; i++) {
-          for (const map in versionMapping) {
-            if (nm.isMatch(ep.versions[i], map, {})) {
-              ep.versions[i] = versionMapping[map];
-              break;
+          if (ep.versions[i]) {
+            for (const map in versionMapping) {
+              if (nm.isMatch(ep.versions[i], map, {})) {
+                ep.versions[i] = versionMapping[map];
+                break;
+              }
             }
           }
         }

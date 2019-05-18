@@ -5,6 +5,8 @@ COPY package*.json ./
 RUN npm install
 COPY . ./
 
-EXPOSE 8080
+# copy crontabs for root user
+COPY config/crontab /etc/crontabs/root
 
-CMD [ "npm", "start" ]
+# start crond with log level 8 in foreground, output to stderr
+CMD ["crond", "-f", "-d", "8"]
