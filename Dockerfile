@@ -6,7 +6,7 @@ RUN npm install
 COPY . ./
 
 # copy crontabs for root user
-COPY config/crontab /etc/crontabs/root
+COPY crontab /etc/crontabs/root
 
 # start crond with log level 8 in foreground, output to stderr
 CMD ["crond", "-f", "-d", "8"]
