@@ -23,6 +23,7 @@ const versionMapping = {
   SVA: 'AVS',
   '*AVS-SVA*': 'AVS',
   'SVA-720p.AVS-HBO.WEBRip.*': 'AVS',
+  'WEB-DL': 'WEBDL',
   'WEB-TBS': 'TBS',
   DIMENSION: 'LOL'
 };
@@ -125,7 +126,9 @@ class Addic7ed {
         .filter(ep => ep.completed);
 
       for (const ep of episodes) {
-        ep.versions = ep.version.toUpperCase().split(/(\s*\&\s*)|\//);
+        ep.version = ep.version.replace(/web\-dl/i, 'WEBDL')
+        // split by &, / or -
+        ep.versions = ep.version.toUpperCase().split(/(\s*\&\s*)|\/|\-/);
         for (let i = 0; i < ep.versions.length; i++) {
           if (ep.versions[i]) {
             for (const map in versionMapping) {
@@ -144,6 +147,7 @@ class Addic7ed {
   }
 
   async findMatchingEpisode(video, show) {
+    let done = 0;
     const twoMonthsAgo = addMonths(Date.now(), -2);
     if (isAfter(video.modified, twoMonthsAgo)) {
       const info = video.parsed;
@@ -154,6 +158,7 @@ class Addic7ed {
         if (match.length > 0) {
           console.log(`  -> found`);
           await this.download(show, match[0], video);
+          done = 1;
         } else if (match.length === 0) {
           console.log(`  -> not yet`);
         } else {
@@ -168,6 +173,7 @@ class Addic7ed {
     } else {
       console.log(`  -> video is too old, give up`);
     }
+    return done;
   }
 
   async download(show, episode, video, rename = true) {

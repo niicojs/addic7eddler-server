@@ -4,7 +4,7 @@
 docker run -d \
     --name addic7eddler \
     --restart=always \
-    -e PGID=1000 -e PUID=1000 \
+    --user seed \
     -p 5252:8080 \
     --network=cloudbox \
     --network-alias=addic7eddler \

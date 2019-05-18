@@ -1,2 +1,2 @@
-* * * * * node index.js > /proc/1/fd/1 2>/proc/1/fd/2
+0 8,16 * * * node index.js > /proc/1/fd/1 2>/proc/1/fd/2
 # remember to end this file with an empty new line
