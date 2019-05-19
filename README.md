@@ -1,11 +1,14 @@
-## Docker
+# Addic7edler Server
+
+Docker image to find missing subtitles and download them from the great Addic7ed website.
+
+## Docker config on cloudbox
 
 ```
 docker run -d \
     --name addic7eddler \
     --restart=always \
-    --user seed \
-    -p 5252:8080 \
+    --user node \
     --network=cloudbox \
     --network-alias=addic7eddler \
     -v /opt/addic7eddler/:/config \
@@ -14,6 +17,5 @@ docker run -d \
      -v /mnt/:/mnt/ \
     --label com.github.cloudbox.cloudbox_managed=false \
     niico/addic7eddler-server
-
 ```
 
