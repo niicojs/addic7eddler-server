@@ -1,6 +1,7 @@
 # Addic7edler Server
 
-Docker image to find missing subtitles and download them from the great Addic7ed website.
+***NOT READY YET FOR PUBLIC USE***  
+Docker image to find missing subtitles and download them from the great Addic7ed website.  
 
 ## Docker config on cloudbox
 
@@ -17,6 +18,6 @@ docker run -d \
     -v /mnt/unionfs/Media:/media \
      -v /mnt/:/mnt/ \
     --label com.github.cloudbox.cloudbox_managed=false \
-    niico/addic7eddler-server
+    niico/addic7eddler-server:dev
 ```
 
