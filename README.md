@@ -11,6 +11,7 @@ docker run -d \
     --user node \
     --network=cloudbox \
     --network-alias=addic7eddler \
+    -v /etc/localtime:/etc/localtime:ro \
     -v /opt/addic7eddler/:/config \
     -v /opt/addic7eddler/:/data \
     -v /mnt/unionfs/Media:/media \
