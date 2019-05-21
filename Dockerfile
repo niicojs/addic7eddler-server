@@ -1,13 +1,13 @@
 FROM node:alpine
-WORKDIR app
+WORKDIR /home/node/app
 
 # RUN apk add --no-cache curl
 
 USER node
 
-COPY package*.json ./
+COPY --chown=node:node package*.json ./
 RUN npm install
-COPY . ./
+COPY --chown=node:node . ./
 
 COPY crontabs /home/node/crontabs
 
