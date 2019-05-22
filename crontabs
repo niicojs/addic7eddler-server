@@ -1,4 +1,4 @@
 SHELL=/bin/sh
-0 8,16 * * * node index.js > /proc/1/fd/1 2>/proc/1/fd/2
-* * * * * echo $(whoami) > /proc/1/fd/1 2>/proc/1/fd/2
+0 8,16 * * * node /home/node/app/index.js > /proc/1/fd/1 2>/proc/1/fd/2
+* * * * * echo $(whoami)
 # remember to end this file with an empty new line
