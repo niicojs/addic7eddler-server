@@ -8,8 +8,7 @@ COPY --chown=node:node package*.json ./
 RUN npm install
 COPY --chown=node:node . ./
 
-COPY crontabs /var/spool/cron/crontabs/node
-RUN chmod 0600 /var/spool/cron/crontabs/node
+COPY --chown=node:node crontabs /var/spool/cron/crontabs/node
 
 USER root
 
