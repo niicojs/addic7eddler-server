@@ -28,7 +28,7 @@ let config = {
 
   const downloaded = [];
   if (videos.length > 0) {
-    const addic7ed = new Addic7ed('fr');
+    const addic7ed = new Addic7ed(config.language);
     await addic7ed.getShows();
     // await fs.promises.writeFile('dev-shows.json', JSON.stringify(available), 'utf8');
 
