@@ -12,7 +12,8 @@ const folders = {
 };
 let config = {
   media: '.',
-  language: 'fr'
+  language: 'fr',
+  notifications: {}
 };
 
 (async () => {
@@ -21,6 +22,7 @@ let config = {
   const configpath = path.join(folders.config, 'config.json');
   const json = await fs.promises.readFile(configpath, 'utf8');
   config = JSON.parse(json);
+  config.path = folders.config;
 
   const videos = await Shows.getMissing(config.media);
   console.log(`${videos.length} videos without subtitles`);
@@ -28,8 +30,13 @@ let config = {
 
   const downloaded = [];
   if (videos.length > 0) {
-    const addic7ed = new Addic7ed(config.language);
-    await addic7ed.getShows();
+    const addic7ed = new Addic7ed(config);
+    const available = await addic7ed.getShows();
+    console.log(`${available.length} shows found on Addic7ed.`);
+    if (available.length === 0) {
+      console.log('No show found on Addic7ed, exiting.');
+      return;
+    }
     // await fs.promises.writeFile('dev-shows.json', JSON.stringify(available), 'utf8');
 
     for (const video of videos) {

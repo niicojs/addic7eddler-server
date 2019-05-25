@@ -29,8 +29,10 @@ const versionMapping = {
 };
 
 class Addic7ed {
-  constructor(lang) {
+  constructor(config) {
     this.epcache = {};
+    this.config = config;
+    const lang = config.language || 'fr';
     if (lang === 'en') {
       this.lang = 1;
     } else if (lang === 'fr') {
@@ -125,8 +127,16 @@ class Addic7ed {
         }))
         .filter(ep => ep.completed);
 
+      if (episodes.length === 0 && this.config.debug === 'true') {
+        const logfile = path.join(
+          this.config.path,
+          `${show.name}-S${show.season}.log.json`
+        );
+        await fs.promises.writeFile(logfile, html, 'utf8');
+      }
+
       for (const ep of episodes) {
-        ep.version = ep.version.replace(/web\-dl/i, 'WEBDL')
+        ep.version = ep.version.replace(/web\-dl/i, 'WEBDL');
         // split by &, / or -
         ep.versions = ep.version.toUpperCase().split(/(\s*\&\s*)|\/|\-/);
         for (let i = 0; i < ep.versions.length; i++) {
@@ -161,6 +171,18 @@ class Addic7ed {
           done = 1;
         } else if (match.length === 0) {
           console.log(`  -> not yet`);
+          if (this.config.debug === 'true') {
+            const data = {
+              info,
+              thisone,
+              match
+            };
+            const logfile = path.join(
+              this.config.path,
+              `${info.name}-S${info.season}E${info.episode}.match.log.json`
+            );
+            await fs.promises.writeFile(logfile, JSON.stringify(data), 'utf8');
+          }
         } else {
           console.log(`  -> not a exact match, get all? (maybe later)`);
           // for (const m of thisone) {
