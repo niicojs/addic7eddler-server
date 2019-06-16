@@ -167,8 +167,9 @@ class Addic7ed {
         const match = thisone.filter(ep => ep.versions.includes(info.group));
         if (match.length > 0) {
           console.log(`  -> found`);
-          await this.download(show, match[0], video);
-          done = 1;
+          if (await this.download(show, match[0], video)) {
+            done = 1;
+          }
         } else if (match.length === 0) {
           console.log(`  -> not yet`);
           if (this.config.debug === 'true') {
@@ -208,7 +209,14 @@ class Addic7ed {
     });
 
     const folder = path.dirname(video.path);
-    if (rename) {
+
+    if (data.body.includes('Addic7ed.com - Sorry, download limit exceeded')) {
+      await fs.promises.writeFile(
+        path.join(folder, 'log.json'),
+        JSON.stringify(data.headers)
+      );
+      return false;
+    } else if (rename) {
       const file = path.basename(video.path, path.extname(video.path));
       await fs.promises.writeFile(path.join(folder, file + '.srt'), data.body);
     } else {
@@ -220,6 +228,8 @@ class Addic7ed {
         await fs.promises.writeFile(path.join(folder, filename), data.body);
       }
     }
+
+    return true;
   }
 }
 
