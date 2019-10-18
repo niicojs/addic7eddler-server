@@ -21,6 +21,9 @@ const versionMapping = {
   '720pHDTVAVS': 'AVS',
   SVA: 'AVS',
   '*AVS-SVA*': 'AVS',
+  'HDTV.AVS': 'AVS',
+  'HDTV.SVA': 'SVA',
+  'HDTV.KILLERS': 'KILLERS',
   'SVA-720p.AVS-HBO.WEBRip.*': 'AVS',
   'WEB-DL': 'WEBDL',
   'WEB-TBS': 'TBS',
@@ -90,7 +93,7 @@ class Addic7ed {
       await request.get(show.url);
       const seasonurl =
         `https://www.addic7ed.com/ajax_loadShow.php` +
-        `?show=${show.id}&season=${+season}&langs=|${this.lang}|&hd=0&hi=-1`;
+        `?show=${show.id}&season=${+season}&langs=|${this.lang}|&hd=0&hi=0`;
 
       const html = await request.get(seasonurl);
       const $ = cheerio.load(html);
@@ -118,6 +121,11 @@ class Addic7ed {
               .find('td')
               .eq(5)
               .text() === 'Completed',
+          hi:
+            $(elt)
+              .find('td')
+              .eq(6)
+              .text() === '✔',
           url:
             'http://www.addic7ed.com' +
             $(elt)
@@ -165,7 +173,11 @@ class Addic7ed {
       if (info) {
         const episodes = await this.findEpisodes(show, info.season);
         const thisone = episodes.filter(ep => +ep.episode === +info.episode);
-        const match = thisone.filter(ep => ep.versions.includes(info.group));
+        let match = thisone.filter(ep => ep.versions.includes(info.group) && !ep.hi);
+        if (match.length === 0) {
+          // try hearing impaired (hi) if not hi found
+          match = thisone.filter(ep => ep.versions.includes(info.group));
+        }
         if (match.length > 0) {
           console.log(`  -> found`);
           if (await this.download(show, match[0], video)) {
@@ -173,23 +185,20 @@ class Addic7ed {
           }
         } else if (match.length === 0) {
           console.log(`  -> not yet`);
-          if (this.config.debug === 'true') {
-            const data = {
-              info,
-              thisone,
-              match
-            };
-            const logfile = path.join(
-              this.config.path,
-              `${info.name}-S${info.season}E${info.episode}.match.log.json`
-            );
-            await fs.promises.writeFile(logfile, JSON.stringify(data), 'utf8');
-          }
+          // if (this.config.debug === 'true') {
+          //   const data = {
+          //     info,
+          //     thisone,
+          //     match
+          //   };
+          //   const logfile = path.join(
+          //     this.config.path,
+          //     `${info.name}-S${info.season}E${info.episode}.match.log.json`
+          //   );
+          //   await fs.promises.writeFile(logfile, JSON.stringify(data), 'utf8');
+          // }
         } else {
           console.log(`  -> not a exact match, get all? (maybe later)`);
-          // for (const m of thisone) {
-          //   await this.download(show, m, video, false);
-          // }
         }
       } else {
         console.log(`  -> unable to parse episode`);
