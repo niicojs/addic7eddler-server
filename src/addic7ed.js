@@ -2,8 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
-const addMonths = require('date-fns/add_months');
-const isAfter = require('date-fns/is_after');
+const { addMonths, isAfter } = require('date-fns');
 const nm = require('nanomatch');
 const rp = require('request-promise-native');
 const request = rp.defaults({
@@ -43,7 +42,9 @@ class Addic7ed {
   async getShows() {
     const url = 'http://www.addic7ed.com';
     const html = await request.get(url);
-    // await fs.writeFile('shows.html', html, 'utf8');
+    if (this.config.debug) {
+      await fs.promises.writeFile('shows.html', html, 'utf8');
+    }
     const $ = cheerio.load(html);
     const shows = $('select[name=qsShow]')
       .find('option')
@@ -137,8 +138,8 @@ class Addic7ed {
 
       for (const ep of episodes) {
         ep.version = ep.version.replace(/web\-dl/i, 'WEBDL');
-        // split by &, / or -
-        ep.versions = ep.version.toUpperCase().split(/(\s*\&\s*)|\/|\-/);
+        // split by &, /, _ or -
+        ep.versions = ep.version.toUpperCase().split(/(\s*\&\s*)|\/|\-|_/);
         for (let i = 0; i < ep.versions.length; i++) {
           if (ep.versions[i]) {
             for (const map in versionMapping) {
