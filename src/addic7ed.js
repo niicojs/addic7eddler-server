@@ -147,7 +147,19 @@ class Addic7ed {
       for (const ep of episodes) {
         ep.version = ep.version.replace(/web\-dl/i, 'WEBDL');
         // split by &, /, _ or -
-        ep.versions = ep.version.toUpperCase().split(/(\s*\&\s*)|\/|\-|_/);
+        ep.versions = ep.version
+          .toUpperCase()
+          .split(/(\s*\&\s*)|(\s*\/\s*)|(\s*\-\s*)|(\s*_\s*)/);
+        ep.versions = [ep.version, ...ep.versions];
+        ep.versions = ep.versions.filter(v => v);
+        ep.versions = [...new Set(ep.versions)];
+        const ln = ep.versions.length;
+        for (let i = 0; i < ln; i++) {
+          const split = ep.versions[i].split(/\s*\.\s*/);
+          if (split.length > 1) {
+            ep.versions = [...ep.versions, ...split];
+          }
+        }
         for (let i = 0; i < ep.versions.length; i++) {
           if (ep.versions[i]) {
             for (const map in versionMapping) {
@@ -173,7 +185,9 @@ class Addic7ed {
       if (info) {
         const episodes = await this.findEpisodes(show, info.season);
         const thisone = episodes.filter(ep => +ep.episode === +info.episode);
-        let match = thisone.filter(ep => ep.versions.includes(info.group) && !ep.hi);
+        let match = thisone.filter(
+          ep => ep.versions.includes(info.group) && !ep.hi
+        );
         if (match.length === 0) {
           // try hearing impaired (hi) if not hi found
           match = thisone.filter(ep => ep.versions.includes(info.group));
