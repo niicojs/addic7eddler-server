@@ -116,11 +116,12 @@ class Addic7ed {
             .find('td')
             .eq(4)
             .text(),
-          completed:
+          completed: ['Completed', 'Terminé'].includes(
             $(elt)
               .find('td')
               .eq(5)
-              .text() === 'Completed',
+              .text()
+          ),
           hi:
             $(elt)
               .find('td')
@@ -136,30 +137,36 @@ class Addic7ed {
         }))
         .filter(ep => ep.completed);
 
-      if (episodes.length === 0 && this.config.debug === 'true') {
-        const logfile = path.join(
-          this.config.path,
-          `${show.name}-S${show.season}.log.json`
-        );
-        await fs.promises.writeFile(logfile, html, 'utf8');
-      }
-
       for (const ep of episodes) {
-        ep.version = ep.version.replace(/web\-dl/i, 'WEBDL');
+        ep.version = ep.version.replace(/web\-dl/i, 'WEBDL').toUpperCase();
+
         // split by &, /, _ or -
-        ep.versions = ep.version
-          .toUpperCase()
-          .split(/(\s*\&\s*)|(\s*\/\s*)|(\s*\-\s*)|(\s*_\s*)/);
+        ep.versions = ep.version.split(
+          /(\s*\&\s*)|(\s*\/\s*)|(\s*\-\s*)|(\s*_\s*)/
+        );
         ep.versions = [ep.version, ...ep.versions];
+
+        let split = ep.version.split(/\s*\.\s*/);
+        ep.versions = [...ep.versions, ...split];
+
+        // clean
         ep.versions = ep.versions.filter(v => v);
         ep.versions = [...new Set(ep.versions)];
+
         const ln = ep.versions.length;
         for (let i = 0; i < ln; i++) {
-          const split = ep.versions[i].split(/\s*\.\s*/);
+          split = ep.versions[i].split(
+            /(\s*\&\s*)|(\s*\/\s*)|(\s*\-\s*)|(\s*_\s*)/
+          );
           if (split.length > 1) {
             ep.versions = [...ep.versions, ...split];
           }
         }
+
+        // clean again
+        ep.versions = ep.versions.filter(v => v);
+        ep.versions = [...new Set(ep.versions)];
+
         for (let i = 0; i < ep.versions.length; i++) {
           if (ep.versions[i]) {
             for (const map in versionMapping) {
@@ -199,18 +206,6 @@ class Addic7ed {
           }
         } else if (match.length === 0) {
           console.log(`  -> not yet`);
-          // if (this.config.debug === 'true') {
-          //   const data = {
-          //     info,
-          //     thisone,
-          //     match
-          //   };
-          //   const logfile = path.join(
-          //     this.config.path,
-          //     `${info.name}-S${info.season}E${info.episode}.match.log.json`
-          //   );
-          //   await fs.promises.writeFile(logfile, JSON.stringify(data), 'utf8');
-          // }
         } else {
           console.log(`  -> not a exact match, get all? (maybe later)`);
         }
