@@ -79,7 +79,7 @@ class Shows {
     for (const sub of folders) {
       const full = path.join(folder, sub);
       const stats = await fs.promises.lstat(full);
-      if (stats.isDirectory() && sub === 'The Blacklist (2013)') {
+      if (stats.isDirectory()) {
         // supposed it's a show, containing season folders
         const others = await this.handleShow({
           name: sub,
