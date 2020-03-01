@@ -1,7 +1,5 @@
 # Addic7edler Server
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/niicojs/addic7eddler-server.svg)](https://greenkeeper.io/)
-
 ***NOT READY YET FOR PUBLIC USE***  
 Docker image to find missing subtitles and download them from the great Addic7ed website.  
 
